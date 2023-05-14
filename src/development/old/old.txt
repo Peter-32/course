@@ -1,0 +1,72 @@
+fold = 5
+train = pd.read_csv(f"../../data/interim/train_df_fold_{fold}.csv")
+val = pd.read_csv(f"../../data/interim/val_df_fold_{fold}.csv")
+test = pd.read_csv(f"../../data/interim/test_df.csv")
+
+train.loc[train['id'] == 25346050]
+
+val.loc[val['id'] == 25346050]
+
+set(val.id.unique()).intersection(set(test.id.unique())), set(train.id.unique()).intersection(set(test.id.unique())), set(train.id.unique()).intersection(set(val.id.unique()))
+
+
+from featexp import get_univariate_plots
+
+get_univariate_plots(data=train_df, target_col = 'duration_seconds', features_list=train_df.columns.tolist()[:], bins=200)
+
+
+train_df.corr()
+
+train_df
+
+X_train = train_df[['PULocationID', 'DOLocationID', 'VendorID', 'passenger_count', 'pickup_day_of_week', 'pickup_time_of_day_integer', 'dayofweek_plus_hour']]
+y_train = train_df[['duration_seconds']]                    
+                    
+
+X_train
+
+import xgboost as xgb
+import shap
+import seaborn as sns
+
+def plot_feature_importance(X_train, y_train):
+    # Fit an XGBoost model
+    model = xgb.XGBRegressor()
+    model.fit(X_train, y_train)
+
+    # Get feature importances
+    importance_dict = model.get_booster().get_score(importance_type='weight')
+    importance_df = pd.DataFrame({'feature': list(importance_dict.keys()), 'importance': list(importance_dict.values())})
+
+    # Sort feature importances in descending order
+    importance_df = importance_df.sort_values(by='importance', ascending=False)
+
+    # Create a barplot of feature importances
+    sns.barplot(x='importance', y='feature', data=importance_df)
+plot_feature_importance(X_train, y_train)
+
+
+from sklearn.feature_selection import RFE
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+
+def recursive_feature_elimination(X_train, y_train, n_features):
+    # Fit a random forest classifier
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+
+    # Use RFE to select the top n_features features
+    selector = RFE(model, n_features_to_select=n_features)
+    selector.fit(X_train, y_train)
+
+    # Get the rankings of each feature
+    rankings = pd.DataFrame({'feature': X_train.columns, 'ranking': selector.ranking_})
+    rankings = rankings.sort_values('ranking', ascending=True)
+
+    return rankings
+
+rankings = recursive_feature_elimination(X_train.iloc[:1000], y_train.iloc[:1000], 3)
+print(rankings)
+
+train_df.info()
+
