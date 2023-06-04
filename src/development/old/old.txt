@@ -70,3 +70,74 @@ print(rankings)
 
 train_df.info()
 
+
+
+
+X_train = train_df[['PULocationID', 'DOLocationID', 'VendorID', 'passenger_count']]
+y_train = train_df[['duration_seconds']]                    
+     
+import xgboost as xgb
+import shap
+import seaborn as sns
+
+def plot_feature_importance(X_train, y_train):
+    # Fit an XGBoost model
+    model = xgb.XGBRegressor()
+    model.fit(X_train, y_train)
+
+    # Get feature importances
+    importance_dict = model.get_booster().get_score(importance_type='weight')
+    importance_df = pd.DataFrame({'feature': list(importance_dict.keys()), 'importance': list(importance_dict.values())})
+
+    # Sort feature importances in descending order
+    importance_df = importance_df.sort_values(by='importance', ascending=False)
+    print(importance_df)
+
+    # Create a barplot of feature importances
+    sns.barplot(x='importance', y='feature', data=importance_df)
+plot_feature_importance(X_train, y_train)
+
+
+
+
+from sklearn.feature_selection import RFE
+from sklearn.ensemble import RandomForestClassifier
+import pandas as pd
+
+def recursive_feature_elimination(X_train, y_train, n_features):
+    # Fit a random forest classifier
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+
+    # Use RFE to select the top n_features features
+    selector = RFE(model, n_features_to_select=n_features)
+    selector.fit(X_train, y_train)
+
+    # Get the rankings of each feature
+    rankings = pd.DataFrame({'feature': X_train.columns, 'ranking': selector.ranking_})
+    rankings = rankings.sort_values('ranking', ascending=True)
+
+    return rankings
+
+rankings = recursive_feature_elimination(X_train.iloc[:1000], y_train.iloc[:1000], 3)
+print(rankings)
+
+train_df.info()
+
+train_df
+
+sns.pairplot(train_df.sample(500))
+
+import matplotlib.pyplot as plt
+temp = train_df.iloc[0:500]
+plt.plot(temp.index, temp['duration_seconds'].apply(lambda x: 1000 if x > 1000 else x), "o")
+
+
+lr.coef_
+
+features
+
+plt.hist(preds - val_df['duration_seconds'])
+
+sns.regplot(x="PULocationID", y="duration_seconds", data=train_df);
+
