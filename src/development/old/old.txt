@@ -141,3 +141,15 @@ plt.hist(preds - val_df['duration_seconds'])
 
 sns.regplot(x="PULocationID", y="duration_seconds", data=train_df);
 
+
+
+
+lr = LinearRegression()
+features = ['PULocationID', 'DOLocationID', 'pickup_day_of_week', 'VendorID', 'passenger_count', 'payment_type_1', 'hour', 'closest_hour']
+lr.fit(train_df[features], train_df['duration_seconds'])
+preds = lr.predict(val_df[features])
+# Baseline model
+print(np.sqrt(mean_squared_error([train_df['duration_seconds'].mean()]*val_df.shape[0], val_df['duration_seconds'])))
+
+# First model (Only 5 seconds better than the baseline model; need to add the useful features )
+print(np.sqrt(mean_squared_error(preds, val_df['duration_seconds'])))
